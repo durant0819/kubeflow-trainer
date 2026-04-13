@@ -1,0 +1,42 @@
+name: Publish Helm Charts
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+
+env:
+  CHART_PATH: charts/kubeflow-trainer
+
+jobs:
+  publish:
+    permissions:
+      contents: read
+      packages: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build, package, and push Helm chart
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=$(grep '^version:' ${{ env.CHART_PATH }}/Chart.yaml | awk '{print $2}')
+          else
+            VERSION="0.0.0-sha-$(git rev-parse --short=7 HEAD)"
+          fi
+          echo "Chart version set to: ${VERSION}"
+
+          helm dependency build ${{ env.CHART_PATH }}
+          helm package ${{ env.CHART_PATH }} --version ${VERSION}
+          helm push kubeflow-trainer-${VERSION}.tgz oci://ghcr.io/kubeflow/charts

@@ -1,0 +1,9 @@
+apiVersion: trainer.kubeflow.org/v1alpha1
+kind: TrainJob
+metadata:
+  name: mnist-test-job
+  namespace: kubeflow-trainer
+spec:
+  # 引用你刚刚创建成功的那个 4070ti 运行时
+  runtimeRef:
+    name: pytorch-runtime-4070ti
