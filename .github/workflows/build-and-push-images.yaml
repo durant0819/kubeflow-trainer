@@ -49,7 +49,7 @@ jobs:
             platforms: linux/amd64,linux/arm64
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: GHCR Login
         if: env.SHOULD_PUBLISH == 'true'
